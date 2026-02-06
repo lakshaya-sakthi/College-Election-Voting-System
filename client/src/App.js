@@ -1,33 +1,54 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+
 import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PageWrapper from "./components/PageWrapper";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminRegister from "./pages/AdminRegister";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminPositions from "./pages/AdminPositions";
+import AdminCandidates from "./pages/AdminCandidates";
 import Vote from "./pages/Vote";
 import Results from "./pages/Results";
-import ProtectedRoute from "./components/ProtectedRoute";
-import AdminCandidates from "./pages/AdminCandidates";
+
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function App() {
+function AnimatedRoutes() {
+  const location = useLocation();
+
   return (
-    <BrowserRouter>
-      <Navbar />
-      <ToastContainer />
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/admin-register" element={<AdminRegister />} />
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        
+        <Route
+          path="/"
+          element={<PageWrapper><Login /></PageWrapper>}
+        />
+
+        <Route
+          path="/login"
+          element={<PageWrapper><Login /></PageWrapper>}
+        />
+
+        <Route
+          path="/register"
+          element={<PageWrapper><Register /></PageWrapper>}
+        />
+
+        <Route
+          path="/admin-register"
+          element={<PageWrapper><AdminRegister /></PageWrapper>}
+        />
 
         <Route
           path="/vote"
           element={
             <ProtectedRoute>
-              <Vote />
+              <PageWrapper><Vote /></PageWrapper>
             </ProtectedRoute>
           }
         />
@@ -36,7 +57,7 @@ export default function App() {
           path="/results"
           element={
             <ProtectedRoute>
-              <Results />
+              <PageWrapper><Results /></PageWrapper>
             </ProtectedRoute>
           }
         />
@@ -46,27 +67,40 @@ export default function App() {
           path="/admin"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <PageWrapper><AdminDashboard /></PageWrapper>
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/admin/candidates"
           element={
             <ProtectedRoute>
-              <AdminCandidates />
+              <PageWrapper><AdminCandidates /></PageWrapper>
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/admin/positions"
           element={
             <ProtectedRoute>
-              <AdminPositions />
+              <PageWrapper><AdminPositions /></PageWrapper>
             </ProtectedRoute>
           }
         />
+
       </Routes>
+    </AnimatePresence>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Navbar />
+      <ToastContainer position="top-right" autoClose={3000} />
+      <AnimatedRoutes />
     </BrowserRouter>
   );
 }
