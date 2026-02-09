@@ -76,7 +76,7 @@ export default function AdminPositions() {
       <Row className="justify-content-center">
         <Col md={6}>
           {/* Add / Edit Card */}
-          <Card className="mb-4 shadow-sm">
+          <Card className="mb-4 shadow-sm glass-card">
             <Card.Body>
               <Card.Title>
                 Position Management{" "}
@@ -107,7 +107,7 @@ export default function AdminPositions() {
           </Card>
 
           {/* Positions List */}
-          <Card className="shadow-sm">
+          <Card className="shadow-sm glass-card">
             <Card.Body>
               <Card.Title className="text-center">Existing Positions</Card.Title>
 

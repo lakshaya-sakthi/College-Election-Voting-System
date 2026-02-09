@@ -34,7 +34,7 @@ export default function AdminRegister() {
 
   return (
     <div className="container mt-5 d-flex justify-content-center">
-      <Card style={{ width: "22rem" }}>
+      <Card style={{ width: "22rem" }} className="glass-card">
         <Card.Body>
           <Card.Title className="mb-3 text-center">
             Admin Registration

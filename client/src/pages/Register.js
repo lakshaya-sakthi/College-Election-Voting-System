@@ -28,7 +28,7 @@ export default function Register() {
 
   return (
     <div className="container mt-5 d-flex justify-content-center">
-      <Card style={{ width: "22rem" }}>
+      <Card style={{ width: "25rem"}} className="glass-card">
         <Card.Body>
           <Card.Title className="mb-3 text-center">Voter Registration</Card.Title>
 

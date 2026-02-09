@@ -37,7 +37,7 @@ export default function AdminDashboard() {
     <Container className="mt-5">
       <Row className="justify-content-center">
         <Col md={8}>
-          <Card className="shadow-lg border-0">
+          <Card className="shadow-lg border-0 glass-card">
             <Card.Body className="text-center">
               <Card.Title className="mb-3 fs-3 fw-bold">
                 Admin Dashboard

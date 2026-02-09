@@ -5,11 +5,11 @@
       rgba(0, 0, 0, 0.45),
       rgba(0, 0, 0, 0.45)
     ),
-    url("https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17");
+    url("https://www.istockphoto.com/illustrations/vote-background");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
-  padding-top: 80px; /* for navbar */
+  padding-top: 80px; /*for navbar */
 }
 
 /* Glass container used everywhere */

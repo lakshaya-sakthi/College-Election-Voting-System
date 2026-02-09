@@ -28,7 +28,7 @@ export default function Results() {
   return (
     <Container>
       <h2 className="text-center fw-bold mb-4">
-        🏆 Election Results
+         Election Results
       </h2>
 
       {results.length === 0 && (
@@ -55,9 +55,9 @@ export default function Results() {
               <Col md={6} className="text-md-end mt-3 mt-md-0">
                 {r.winner ? (
                   <>
-                    <Card.Text className="mb-2">
+                    <Card.Text className="mb-2 text-dark">
                       Winner:
-                      <span className="ms-2 fw-bold">
+                      <span className="ms-2 fw-bold text-dark">
                         {r.winner.name}
                       </span>
                     </Card.Text>
