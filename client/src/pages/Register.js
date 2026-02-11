@@ -3,6 +3,7 @@ import { useState } from "react";
 import API from "../api";
 import { toast } from "react-toastify";
 import { Card, Button, Form } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -10,6 +11,8 @@ export default function Register() {
     email: "",
     password: "",
   });
+
+  const navigate = useNavigate();
 
   const submit = async () => {
     if (!form.name || !form.email || !form.password) {
@@ -72,6 +75,7 @@ export default function Register() {
           >
             Register
           </Button>
+          <p style={{cursor:"pointer" }} onClick={()=>navigate("/login")} className="mt-2">Already have an account ?</p>
         </Card.Body>
       </Card>
     </div>

@@ -43,9 +43,10 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </Form.Group>
-          <Button className="w-100 mt-2" onClick={submit}>
+          <Button className="w-100 mb-2" onClick={submit}>
             Login
           </Button>
+          <p style={{cursor:"pointer" }} onClick={()=>navigate("/register")}>New User ?</p>
         </Card.Body>
       </Card>
     </div>

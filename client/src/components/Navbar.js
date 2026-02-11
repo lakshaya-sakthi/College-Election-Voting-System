@@ -1,5 +1,5 @@
 // src/components/Navbar.js
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate} from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Container, Button } from "react-bootstrap";
@@ -21,6 +21,13 @@ export default function Navbar() {
     navigate("/login");
   };
 
+//   const location = useLocation();
+
+// if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/") {
+//   return null;
+// }
+
+
   return (
     <div className={`glass-navbar ${scrolled ? "glass-navbar-scrolled" : ""}`}>
       <Container className="d-flex justify-content-between align-items-center py-2">
@@ -32,7 +39,7 @@ export default function Navbar() {
         </Link>
 
         <div className="d-flex gap-2 flex-wrap">
-          {!role && (
+          {/* {!role && (
             <>
               <Button as={Link} to="/login" variant="outline-light" size="sm">
                 Login
@@ -41,30 +48,30 @@ export default function Navbar() {
                 Register
               </Button>
             </>
-          )}
+          )} */}
 
           {role === "voter" && (
-            <Button as={Link} to="/vote" variant="success" size="sm">
+            <Button as={Link} to="/vote" variant="light" size="sm">
               Vote
             </Button>
           )}
 
           {role === "admin" && (
             <>
-              <Button as={Link} to="/admin" variant="warning" size="sm">
+              <Button as={Link} to="/admin" variant="light" size="sm">
                 Dashboard
               </Button>
-              <Button as={Link} to="/admin/positions" variant="secondary" size="sm">
+              <Button as={Link} to="/admin/positions" variant="light" size="sm">
                 Positions
               </Button>
-              <Button as={Link} to="/admin/candidates" variant="primary" size="sm">
+              <Button as={Link} to="/admin/candidates" variant="light" size="sm">
                 Candidates
               </Button>
             </>
           )}
 
           {role && (
-            <Button as={Link} to="/results" variant="info" size="sm">
+            <Button as={Link} to="/results" variant="light" size="sm">
               Results
             </Button>
           )}

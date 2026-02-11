@@ -155,7 +155,7 @@ export default function AdminCandidates() {
         <Col md={8}>
 
           {/* ===== Add / Edit Candidate ===== */}
-          <Card className="mb-4 shadow-sm">
+          <Card className="mb-4 shadow-sm glass-card">
             <Card.Body>
               <Card.Title>
                 Candidate Management{" "}
@@ -261,7 +261,7 @@ export default function AdminCandidates() {
           </Card>
 
           {/* ===== Candidate List ===== */}
-          <Card className="shadow-sm">
+          <Card className="shadow-sm glass-card">
             <Card.Body>
               <Card.Title>Existing Candidates</Card.Title>
 

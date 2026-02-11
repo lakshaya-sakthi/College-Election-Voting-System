@@ -99,7 +99,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <ToastContainer position="top-center" autoClose={2000} />
+      <ToastContainer position="top-center" autoClose={1500} />
       <AnimatedRoutes />
     </BrowserRouter>
   );
