@@ -24,7 +24,7 @@ export default function Login() {
 
   return (
     <div className="container mt-5 d-flex justify-content-center">
-      <Card style={{ width: "22rem" }}>
+      <Card style={{ width: "22rem" }} className="glass-card">
         <Card.Body>
           <Card.Title className="mb-3 text-center">Login</Card.Title>
           <Form.Group className="mb-2">

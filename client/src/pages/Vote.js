@@ -56,7 +56,11 @@ export default function Vote() {
                 {/* Candidate Photo */}
                 <Col md={2} className="text-center">
                   <img
-                    src={c.photo}
+                    src={
+                      c.photo.startsWith("http")
+                      ? c.photo
+                      : `http://localhost:5000${c.photo}`
+                    }
                     alt={c.name}
                     width="90"
                     height="90"

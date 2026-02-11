@@ -1,24 +1,68 @@
-// server.js
+// =======================
+// IMPORTS
+// =======================
 const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const multer = require("multer");
+const path = require("path");
+const fs=require("fs");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.use("/uploads", express.static("uploads"));
 
-/* =======================
-   DATABASE CONNECTION
-======================= */
+// =======================
+// FOLDER CREATION
+// =======================
+const uploadPath=path.join(__dirname, "uploads");
+// Create uploads folder if it doesn't exist
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath);
+}
+
+// =======================
+// DATABASE CONNECTION
+// =======================
 mongoose.connect("mongodb://127.0.0.1:27017/college_election")
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.error(err));
 
-/* =======================
-   SCHEMAS & MODELS
-======================= */
+// =======================
+// MULTER IMAGE UPLOAD
+// =======================
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    const uniqueName =
+      Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueName + path.extname(file.originalname));
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpg"
+  ) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only JPG, JPEG, PNG allowed"), false);
+  }
+};
+
+const upload = multer({ storage, fileFilter });
+
+// =======================
+// SCHEMAS & MODELS
+// =======================
+
 const UserSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
@@ -51,6 +95,7 @@ const VoteSchema = new mongoose.Schema({
   voter: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   position: { type: mongoose.Schema.Types.ObjectId, ref: "Position" }
 });
+
 VoteSchema.index({ voter: 1, position: 1 }, { unique: true });
 
 const User = mongoose.model("User", UserSchema);
@@ -59,9 +104,10 @@ const Position = mongoose.model("Position", PositionSchema);
 const Candidate = mongoose.model("Candidate", CandidateSchema);
 const Vote = mongoose.model("Vote", VoteSchema);
 
-/* =======================
-   MIDDLEWARE
-======================= */
+// =======================
+// AUTH MIDDLEWARE
+// =======================
+
 const JWT_SECRET = "SECRET_KEY";
 
 const auth = (req, res, next) => {
@@ -81,36 +127,41 @@ const adminOnly = (req, res, next) => {
   next();
 };
 
-/* =======================
-   AUTH ROUTES
-======================= */
-// Register user/admin
+// =======================
+// AUTH ROUTES
+// =======================
+
 app.post("/api/register", async (req, res) => {
   try {
-    const user = await User.create(req.body);
+    await User.create(req.body);
     res.json({ msg: "Registered successfully" });
   } catch (err) {
     res.status(400).json({ msg: err.message });
   }
 });
 
-// Login
 app.post("/api/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
     if (!user || !(await bcrypt.compare(req.body.password, user.password)))
       return res.status(401).json({ msg: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: "12h" });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      JWT_SECRET,
+      { expiresIn: "12h" }
+    );
+
     res.json({ token, role: user.role });
   } catch {
     res.status(500).json({ msg: "Server error" });
   }
 });
 
-/* =======================
-   ADMIN – ELECTION CONTROL
-======================= */
+// =======================
+// ADMIN – ELECTION CONTROL
+// =======================
+
 app.post("/api/admin/start", auth, adminOnly, async (req, res) => {
   await Election.findOneAndUpdate({}, { active: true }, { upsert: true });
   res.json({ msg: "Election started" });
@@ -127,15 +178,15 @@ app.post("/api/admin/reset", auth, adminOnly, async (req, res) => {
   res.json({ msg: "Election reset completed" });
 });
 
-/* =======================
-   ADMIN – POSITION CRUD
-======================= */
+// =======================
+// ADMIN – POSITION CRUD
+// =======================
+
 app.post("/api/admin/positions", auth, adminOnly, async (req, res) => {
   const position = await Position.create(req.body);
   res.json(position);
 });
 
-// Get all positions for admin
 app.get("/api/admin/positions", auth, adminOnly, async (req, res) => {
   const positions = await Position.find();
   res.json(positions);
@@ -144,35 +195,84 @@ app.get("/api/admin/positions", auth, adminOnly, async (req, res) => {
 app.delete("/api/admin/positions/:id", auth, adminOnly, async (req, res) => {
   await Candidate.deleteMany({ position: req.params.id });
   await Position.findByIdAndDelete(req.params.id);
-  res.json({ msg: "Position & candidates deleted" });
+  res.json({ msg: "Position deleted" });
 });
 
-/* =======================
-   ADMIN – CANDIDATE CRUD
-======================= */
+// =======================
+// ADMIN – CANDIDATE CRUD
+// =======================
+
 app.get("/api/admin/candidates", auth, adminOnly, async (req, res) => {
   const candidates = await Candidate.find().populate("position");
   res.json(candidates);
 });
 
-app.post("/api/admin/candidates", auth, adminOnly, async (req, res) => {
-  const candidate = await Candidate.create(req.body);
-  res.json(candidate);
-});
+app.post(
+  "/api/admin/candidates",
+  auth,
+  adminOnly,
+  upload.single("photo"),
+  async (req, res) => {
+    try {
+      const { name, description, position } = req.body;
 
-app.put("/api/admin/candidates/:id", auth, adminOnly, async (req, res) => {
-  const updated = await Candidate.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(updated);
-});
+      const photo = req.file
+        ? `/uploads/${req.file.filename}`
+        : req.body.photo;
+
+      const candidate = await Candidate.create({
+        name,
+        description,
+        position,
+        photo
+      });
+
+      res.json(candidate);
+    } catch {
+      res.status(500).json({ msg: "Candidate creation failed" });
+    }
+  }
+);
+
+app.put(
+  "/api/admin/candidates/:id",
+  auth,
+  adminOnly,
+  upload.single("photo"),
+  async (req, res) => {
+    try {
+      const { name, description, position } = req.body;
+
+      let updateData = { name, description, position };
+
+      if (req.file) {
+        updateData.photo = `/uploads/${req.file.filename}`;
+      } else if (req.body.photo) {
+        updateData.photo = req.body.photo;
+      }
+
+      const updated = await Candidate.findByIdAndUpdate(
+        req.params.id,
+        updateData,
+        { new: true }
+      );
+
+      res.json(updated);
+    } catch {
+      res.status(500).json({ msg: "Update failed" });
+    }
+  }
+);
 
 app.delete("/api/admin/candidates/:id", auth, adminOnly, async (req, res) => {
   await Candidate.findByIdAndDelete(req.params.id);
   res.json({ msg: "Candidate deleted" });
 });
 
-/* =======================
-   VOTER – VIEW CANDIDATES
-======================= */
+// =======================
+// VOTER – VIEW CANDIDATES
+// =======================
+
 app.get("/api/vote/candidates", auth, async (req, res) => {
   const election = await Election.findOne();
   if (!election?.active)
@@ -182,9 +282,10 @@ app.get("/api/vote/candidates", auth, async (req, res) => {
   res.json(candidates);
 });
 
-/* =======================
-   VOTER – CAST VOTE
-======================= */
+// =======================
+// VOTER – CAST VOTE
+// =======================
+
 app.post("/api/vote/:candidateId", auth, async (req, res) => {
   const election = await Election.findOne();
   if (!election?.active)
@@ -194,18 +295,24 @@ app.post("/api/vote/:candidateId", auth, async (req, res) => {
   if (!candidate) return res.sendStatus(404);
 
   try {
-    await Vote.create({ voter: req.user.id, position: candidate.position });
+    await Vote.create({
+      voter: req.user.id,
+      position: candidate.position
+    });
+
     candidate.votes += 1;
     await candidate.save();
+
     res.json({ msg: "Vote cast successfully" });
   } catch {
     res.status(400).json({ msg: "Already voted for this position" });
   }
 });
 
-/* =======================
-   RESULTS – POST ELECTION
-======================= */
+// =======================
+// RESULTS
+// =======================
+
 app.get("/api/results", auth, async (req, res) => {
   const election = await Election.findOne();
   if (election?.active)
@@ -216,7 +323,10 @@ app.get("/api/results", auth, async (req, res) => {
 
   for (const pos of positions) {
     const candidates = await Candidate.find({ position: pos._id });
-    const winner = candidates.reduce((a, b) => (b.votes > (a?.votes || 0) ? b : a), null);
+    const winner = candidates.reduce(
+      (a, b) => (b.votes > (a?.votes || 0) ? b : a),
+      null
+    );
 
     results.push({
       position: pos.name,
@@ -228,7 +338,8 @@ app.get("/api/results", auth, async (req, res) => {
   res.json(results);
 });
 
-/* =======================
-   SERVER START
-======================= */
+// =======================
+// SERVER START
+// =======================
+
 app.listen(5000, () => console.log("Server running on port 5000"));
