@@ -1,5 +1,4 @@
-// src/components/Navbar.js
-import { Link, useNavigate} from "react-router-dom";
+import { Link, useNavigate,useLocation} from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Container, Button } from "react-bootstrap";
@@ -21,11 +20,11 @@ export default function Navbar() {
     navigate("/login");
   };
 
-//   const location = useLocation();
+  const location = useLocation();
 
-// if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/") {
-//   return null;
-// }
+if (location.pathname === "/login" || location.pathname === "/register" || location.pathname === "/") {
+  return null;
+}
 
 
   return (
