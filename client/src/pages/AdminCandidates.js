@@ -8,19 +8,17 @@ import {
   Form,
   Row,
   Col,
-  Badge
+  Badge,
+  FormLabel
 } from "react-bootstrap";
 
 export default function AdminCandidates() {
   const [candidates, setCandidates] = useState([]);
   const [positions, setPositions] = useState([]);
 
-  const [uploadType, setUploadType] = useState("url"); // url | file
-
   const [form, setForm] = useState({
     name: "",
-    photo: "",     // for URL
-    file: null,    // for uploaded file
+    file: null,
     description: "",
     position: ""
   });
@@ -56,17 +54,7 @@ export default function AdminCandidates() {
 
   const submitCandidate = async () => {
     if (!form.name || !form.description || !form.position) {
-      toast.error("All required fields must be filled");
-      return;
-    }
-
-    if (uploadType === "url" && !form.photo) {
-      toast.error("Photo URL is required");
-      return;
-    }
-
-    if (uploadType === "file" && !form.file) {
-      toast.error("Please upload an image");
+      toast.error("All fields must be filled");
       return;
     }
 
@@ -76,9 +64,7 @@ export default function AdminCandidates() {
       formData.append("description", form.description);
       formData.append("position", form.position);
 
-      if (uploadType === "url") {
-        formData.append("photo", form.photo);
-      } else {
+      if (form.file) {
         formData.append("photo", form.file);
       }
 
@@ -106,13 +92,11 @@ export default function AdminCandidates() {
   const editCandidate = (c) => {
     setForm({
       name: c.name,
-      photo: c.photo || "",
       file: null,
       description: c.description,
       position: c.position?._id || ""
     });
 
-    setUploadType("url"); // default to URL when editing
     setEditingId(c._id);
   };
 
@@ -138,13 +122,18 @@ export default function AdminCandidates() {
   const cancelEdit = () => {
     setForm({
       name: "",
-      photo: "",
       file: null,
       description: "",
       position: ""
     });
     setEditingId(null);
-    setUploadType("url");
+  };
+
+  // ================= IMAGE HELPER =================
+
+  const getImageUrl = (photo) => {
+    if (!photo) return "https://via.placeholder.com/90";
+    return `http://localhost:5000${photo}`;
   };
 
   // ================= UI =================
@@ -173,48 +162,25 @@ export default function AdminCandidates() {
                 />
               </Form.Group>
 
-              {/* Upload Type Selector */}
+              {/* File Upload */}
               <Form.Group className="mb-2">
-                {/* <Form.Label className="text-dark">Photo Type</Form.Label> */}
-                <Form.Select
-                  value={uploadType}
-                  onChange={(e) => setUploadType(e.target.value)}
-                >
-                  <option value="url">Photo URL</option>
-                  <option value="file">Upload Image</option>
-                </Form.Select>
+                <FormLabel className="text-dark">Photo</FormLabel>
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setForm({ ...form, file: e.target.files[0] })
+                  }
+                />
               </Form.Group>
 
-              {/* URL OR FILE */}
-              {uploadType === "url" ? (
-                <Form.Group className="mb-2">
-                  <Form.Control
-                    placeholder="Photo URL"
-                    value={form.photo}
-                    onChange={(e) =>
-                      setForm({ ...form, photo: e.target.value })
-                    }
-                  />
-                </Form.Group>
-              ) : (
-                <Form.Group className="mb-2">
-                  <Form.Control
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      setForm({ ...form, file: e.target.files[0] })
-                    }
-                  />
-                </Form.Group>
-              )}
-
               {/* Preview */}
-              {uploadType === "file" && form.file && (
+              {form.file && (
                 <img
                   src={URL.createObjectURL(form.file)}
                   alt="Preview"
                   height="100"
-                  className="mb-2"
+                  className="mb-2 rounded"
                 />
               )}
 
@@ -276,18 +242,13 @@ export default function AdminCandidates() {
                   <div className="d-flex justify-content-between align-items-center">
 
                     <div className="d-flex align-items-center gap-3">
-                      {c.photo && (
-                        <img
-                          src={c.photo.startsWith("http")
-                            ?c.photo
-                            :`http://localhost:5000${c.photo}`
-                          }
-                          alt={c.name}
-                          height="60"
-                          width="60"
-                          style={{ objectFit: "cover", borderRadius: "8px" }}
-                        />
-                      )}
+                      <img
+                        src={getImageUrl(c.photo)}
+                        alt={c.name}
+                        width="90"
+                        height="90"
+                        style={{ objectFit: "cover", borderRadius: "50%" }}
+                      />
 
                       <div>
                         <strong>{c.name}</strong>{" "}

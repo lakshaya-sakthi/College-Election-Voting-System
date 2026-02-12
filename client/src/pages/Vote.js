@@ -56,16 +56,19 @@ export default function Vote() {
                 {/* Candidate Photo */}
                 <Col md={2} className="text-center">
                   <img
-                    src={
-                      c.photo.startsWith("http")
-                      ? c.photo
-                      : `http://localhost:5000${c.photo}`
-                    }
-                    alt={c.name}
-                    width="90"
-                    height="90"
-                    style={{ objectFit: "cover", borderRadius: "50%" }}
-                  />
+  src={
+    c.photo
+      ? c.photo.startsWith("http")
+        ? c.photo
+        : `http://localhost:5000${c.photo}`
+      : "https://via.placeholder.com/90"
+  }
+  alt={c.name}
+  width="90"
+  height="90"
+  style={{ objectFit: "cover", borderRadius: "50%" }}
+/>
+
                 </Col>
 
                 {/* Candidate Info */}

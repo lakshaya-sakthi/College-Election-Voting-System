@@ -28,7 +28,7 @@ export default function Results() {
   return (
     <Container>
       <h2 className="text-center fw-bold mb-4">
-         Election Results
+        Election Results
       </h2>
 
       {results.length === 0 && (
@@ -41,6 +41,7 @@ export default function Results() {
         <Card key={index} className="glass-card mb-4">
           <Card.Body>
             <Row className="align-items-center">
+              
               {/* Position */}
               <Col md={6}>
                 <Card.Title className="mb-2">
@@ -51,13 +52,15 @@ export default function Results() {
                 </Badge>
               </Col>
 
-              {/* Winner */}
+              {/* Result Section */}
               <Col md={6} className="text-md-end mt-3 mt-md-0">
-                {r.winner ? (
+
+                {/*  Single Winner */}
+                {r.status === "winner" && r.winner && (
                   <>
-                    <Card.Text className="mb-2 text-dark">
-                      Winner:
-                      <span className="ms-2 fw-bold text-dark">
+                    <Card.Text className="mb-2">
+                       Winner:
+                      <span className="ms-2 fw-bold">
                         {r.winner.name}
                       </span>
                     </Card.Text>
@@ -65,11 +68,35 @@ export default function Results() {
                       Votes: {r.winner.votes}
                     </Badge>
                   </>
-                ) : (
+                )}
+
+                {/* ⚖️ Draw Case */}
+                {r.status === "draw" && r.winners && (
+                  <>
+                    <Card.Text className="mb-2 fw-bold text-warning">
+                       It's a Draw!
+                    </Card.Text>
+
+                    {r.winners.map((candidate) => (
+                      <div key={candidate._id}>
+                        <span className="fw-semibold">
+                          {candidate.name}
+                        </span>
+                        <Badge bg="warning" className="ms-2 glass-badge">
+                          {candidate.votes} Votes
+                        </Badge>
+                      </div>
+                    ))}
+                  </>
+                )}
+
+                {/* 🚫 No Winner */}
+                {r.status === "no_result" && (
                   <Badge bg="secondary" className="glass-badge">
-                    No winner
+                    No winner declared
                   </Badge>
                 )}
+
               </Col>
             </Row>
           </Card.Body>

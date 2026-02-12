@@ -27,7 +27,7 @@ if (!fs.existsSync(uploadPath)) {
 // =======================
 // DATABASE CONNECTION
 // =======================
-mongoose.connect("mongodb://127.0.0.1:27017/college_election")
+mongoose.connect("mongodb://localhost:27017/college-election")
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.error(err));
 
@@ -310,33 +310,80 @@ app.post("/api/vote/:candidateId", auth, async (req, res) => {
 });
 
 // =======================
-// RESULTS
+// RESULTS (WITH DRAW LOGIC)
 // =======================
 
 app.get("/api/results", auth, async (req, res) => {
-  const election = await Election.findOne();
-  if (election?.active)
-    return res.status(403).json({ msg: "Results hidden during election" });
+  try {
+    const election = await Election.findOne();
 
-  const positions = await Position.find();
-  const results = [];
+    // Hide results if election is active
+    if (election?.active) {
+      return res.status(403).json({ msg: "Results hidden during election" });
+    }
 
-  for (const pos of positions) {
-    const candidates = await Candidate.find({ position: pos._id });
-    const winner = candidates.reduce(
-      (a, b) => (b.votes > (a?.votes || 0) ? b : a),
-      null
-    );
+    const positions = await Position.find();
+    const results = [];
 
-    results.push({
-      position: pos.name,
-      winner: winner ? { name: winner.name, votes: winner.votes } : null,
-      candidates
-    });
+    for (const pos of positions) {
+      const candidates = await Candidate.find({ position: pos._id });
+
+      if (candidates.length === 0) {
+        results.push({
+          position: pos.name,
+          status: "no_result"
+        });
+        continue;
+      }
+
+      // Find highest vote count
+      const maxVotes = Math.max(...candidates.map(c => c.votes));
+
+      // If no one has votes
+      if (maxVotes === 0) {
+        results.push({
+          position: pos.name,
+          status: "no_result"
+        });
+        continue;
+      }
+
+      // Get all candidates with max votes
+      const topCandidates = candidates.filter(c => c.votes === maxVotes);
+
+      // If only one winner
+      if (topCandidates.length === 1) {
+        results.push({
+          position: pos.name,
+          status: "winner",
+          winner: {
+            _id: topCandidates[0]._id,
+            name: topCandidates[0].name,
+            votes: topCandidates[0].votes
+          }
+        });
+      }
+      // If multiple winners → DRAW
+      else {
+        results.push({
+          position: pos.name,
+          status: "draw",
+          winners: topCandidates.map(c => ({
+            _id: c._id,
+            name: c.name,
+            votes: c.votes
+          }))
+        });
+      }
+    }
+
+    res.json(results);
+
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to fetch results" });
   }
-
-  res.json(results);
 });
+
 
 // =======================
 // SERVER START
