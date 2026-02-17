@@ -13,6 +13,8 @@ import AdminPositions from "./pages/AdminPositions";
 import AdminCandidates from "./pages/AdminCandidates";
 import Vote from "./pages/Vote";
 import Results from "./pages/Results";
+import AdminVotes from "./pages/AdminVotes";
+
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -89,6 +91,16 @@ function AnimatedRoutes() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/admin/votes"
+          element={
+            <ProtectedRoute>
+              <PageWrapper><AdminVotes /></PageWrapper>
+            </ProtectedRoute>
+          }
+          />
+
 
       </Routes>
     </AnimatePresence>

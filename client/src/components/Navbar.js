@@ -66,6 +66,9 @@ if (location.pathname === "/login" || location.pathname === "/register" || locat
               <Button as={Link} to="/admin/candidates" variant="light" size="sm">
                 Candidates
               </Button>
+              <Button as={Link} to="/admin/votes" variant="light" size="sm">
+                Votes List
+              </Button>
             </>
           )}
 
@@ -76,7 +79,7 @@ if (location.pathname === "/login" || location.pathname === "/register" || locat
           )}
 
           {role && (
-            <Button variant="danger" size="sm" onClick={handleLogout}>
+            <Button variant="dark" size="sm" onClick={handleLogout}>
               Logout
             </Button>
           )}

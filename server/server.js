@@ -92,11 +92,13 @@ const CandidateSchema = new mongoose.Schema({
 });
 
 const VoteSchema = new mongoose.Schema({
-  voter: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  position: { type: mongoose.Schema.Types.ObjectId, ref: "Position" }
+  voter: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  position: { type: mongoose.Schema.Types.ObjectId, ref: "Position", required: true },
+  candidate: { type: mongoose.Schema.Types.ObjectId, ref: "Candidate", required: true }
 });
 
 VoteSchema.index({ voter: 1, position: 1 }, { unique: true });
+
 
 const User = mongoose.model("User", UserSchema);
 const Election = mongoose.model("Election", ElectionSchema);
@@ -177,6 +179,25 @@ app.post("/api/admin/reset", auth, adminOnly, async (req, res) => {
   await Candidate.updateMany({}, { votes: 0 });
   res.json({ msg: "Election reset completed" });
 });
+
+// =======================
+// ADMIN – VIEW VOTES
+// =======================
+
+app.get("/api/admin/votes", auth, adminOnly, async (req, res) => {
+  try {
+    const votes = await Vote.find()
+      .populate("voter", "name email")
+      .populate("position", "name")
+      .populate("candidate","name")
+      .sort({ _id: -1 });
+
+    res.json(votes);
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to fetch votes" });
+  }
+});
+
 
 // =======================
 // ADMIN – POSITION CRUD
@@ -297,7 +318,8 @@ app.post("/api/vote/:candidateId", auth, async (req, res) => {
   try {
     await Vote.create({
       voter: req.user.id,
-      position: candidate.position
+      position: candidate.position,
+      candidate: candidate._id
     });
 
     candidate.votes += 1;
