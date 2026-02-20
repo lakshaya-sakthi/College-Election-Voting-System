@@ -9,6 +9,9 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const fs=require("fs");
+require("dotenv").config();
+const { OAuth2Client } = require("google-auth-library");
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const app = express();
 app.use(express.json());
@@ -67,10 +70,13 @@ const UserSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
   password: String,
+  googleId: { type: String, default: null },
+  authProvider: { type: String, enum: ["local", "google"], default: "local" },
   role: { type: String, enum: ["admin", "voter"], default: "voter" }
 });
 
 UserSchema.pre("save", async function () {
+  if (!this.password) return;
   if (!this.isModified("password")) return;
   this.password = await bcrypt.hash(this.password, 10);
 });
@@ -157,6 +163,59 @@ app.post("/api/login", async (req, res) => {
     res.json({ token, role: user.role });
   } catch {
     res.status(500).json({ msg: "Server error" });
+  }
+});
+
+// =======================
+// GOOGLE AUTH
+// =======================
+app.post("/api/auth/google", async (req, res) => {
+  try {
+    const { credential } = req.body; // Google ID token
+    if (!credential) return res.status(400).json({ msg: "Missing credential" });
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    const googleId = payload.sub;
+    const email = payload.email;
+    const name = payload.name || "Google User";
+
+    // ✅ Find user by email
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // ✅ Create new user (default voter)
+      user = await User.create({
+        name,
+        email,
+        googleId,
+        authProvider: "google",
+        role: "voter"
+      });
+    } else {
+      // ✅ If user exists, attach googleId if not present
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.authProvider = "google";
+        await user.save();
+      }
+    }
+
+    // ✅ Issue your app JWT
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET || "SECRET_KEY",
+      { expiresIn: "12h" }
+    );
+
+    res.json({ token, role: user.role });
+  } catch (err) {
+    console.error(err);
+    res.status(401).json({ msg: "Google authentication failed" });
   }
 });
 

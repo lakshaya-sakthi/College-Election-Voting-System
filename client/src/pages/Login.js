@@ -1,5 +1,5 @@
 // src/pages/Login.js
-import { useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import API from "../api";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -9,8 +9,11 @@ import { toast } from "react-toastify";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const googleBtnRef = useRef(null);
 
   const submit = async () => {
     try {
@@ -22,11 +25,46 @@ export default function Login() {
     }
   };
 
+  // ✅ Google button init
+  useEffect(() => {
+    // global google from the script
+    if (!window.google || !googleBtnRef.current) return;
+
+    window.google.accounts.id.initialize({
+      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+      callback: async (response) => {
+        try {
+          // Send google ID token to backend
+          const res = await API.post("/auth/google", {
+            credential: response.credential
+          });
+
+          login(res.data.token, res.data.role);
+          toast.success("Signed in with Google");
+
+          navigate(res.data.role === "admin" ? "/admin" : "/vote");
+        } catch (err) {
+          toast.error(err.response?.data?.msg || "Google login failed");
+        }
+      }
+    });
+
+    window.google.accounts.id.renderButton(googleBtnRef.current, {
+      theme: "outline",
+      size: "large",
+      width: 320
+    });
+
+    // Optional: prompt one-tap (you can remove)
+    // window.google.accounts.id.prompt();
+  }, [login, navigate]);
+
   return (
     <div className="container mt-5 d-flex justify-content-center">
       <Card style={{ width: "22rem" }} className="glass-card">
         <Card.Body>
           <Card.Title className="mb-3 text-center">Login</Card.Title>
+
           <Form.Group className="mb-2">
             <Form.Control
               type="email"
@@ -35,6 +73,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </Form.Group>
+
           <Form.Group className="mb-2">
             <Form.Control
               type="password"
@@ -43,10 +82,23 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </Form.Group>
+
           <Button className="w-100 mb-2" onClick={submit}>
             Login
           </Button>
-          <p style={{cursor:"pointer" }} onClick={()=>navigate("/register")}>New User ?</p>
+
+          {/* ✅ Google Sign-In Button */}
+          <div className="d-flex justify-content-center mb-2">
+            <div ref={googleBtnRef} />
+          </div>
+
+          <p
+            style={{ cursor: "pointer" }}
+            className="text-center mb-0"
+            onClick={() => navigate("/register")}
+          >
+            New User ?
+          </p>
         </Card.Body>
       </Card>
     </div>
