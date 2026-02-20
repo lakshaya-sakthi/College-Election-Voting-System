@@ -50,13 +50,12 @@ export default function Login() {
     });
 
     window.google.accounts.id.renderButton(googleBtnRef.current, {
-      theme: "outline",
-      size: "large",
+      theme: "filled_blue", // outline | filled_blue | filled_black
+      size: "large",        // small | medium | large
+      text: "continue_with",  // signin_with | signup_with | continue_with
+      shape: "pill",        // rectangular | pill | circle | square
       width: 320
     });
-
-    // Optional: prompt one-tap (you can remove)
-    // window.google.accounts.id.prompt();
   }, [login, navigate]);
 
   return (
