@@ -30,7 +30,7 @@ if (!fs.existsSync(uploadPath)) {
 // =======================
 // DATABASE CONNECTION
 // =======================
-mongoose.connect("mongodb://127.0.0.1:27017/college-election")
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.error(err));
 
