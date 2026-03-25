@@ -15,7 +15,6 @@ import Vote from "./pages/Vote";
 import Results from "./pages/Results";
 import AdminVotes from "./pages/AdminVotes";
 
-
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -25,32 +24,49 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        
         <Route
           path="/"
-          element={<PageWrapper><Login /></PageWrapper>}
+          element={
+            <PageWrapper>
+              <Login />
+            </PageWrapper>
+          }
         />
 
         <Route
           path="/login"
-          element={<PageWrapper><Login /></PageWrapper>}
+          element={
+            <PageWrapper>
+              <Login />
+            </PageWrapper>
+          }
         />
 
         <Route
           path="/register"
-          element={<PageWrapper><Register /></PageWrapper>}
+          element={
+            <PageWrapper>
+              <Register />
+            </PageWrapper>
+          }
         />
 
         <Route
           path="/admin-register"
-          element={<PageWrapper><AdminRegister /></PageWrapper>}
+          element={
+            <PageWrapper>
+              <AdminRegister />
+            </PageWrapper>
+          }
         />
 
         <Route
           path="/vote"
           element={
             <ProtectedRoute>
-              <PageWrapper><Vote /></PageWrapper>
+              <PageWrapper>
+                <Vote />
+              </PageWrapper>
             </ProtectedRoute>
           }
         />
@@ -59,17 +75,20 @@ function AnimatedRoutes() {
           path="/results"
           element={
             <ProtectedRoute>
-              <PageWrapper><Results /></PageWrapper>
+              <PageWrapper>
+                <Results />
+              </PageWrapper>
             </ProtectedRoute>
           }
         />
 
-        {/* Admin Routes */}
         <Route
           path="/admin"
           element={
-            <ProtectedRoute>
-              <PageWrapper><AdminDashboard /></PageWrapper>
+            <ProtectedRoute adminOnly={true}>
+              <PageWrapper>
+                <AdminDashboard />
+              </PageWrapper>
             </ProtectedRoute>
           }
         />
@@ -77,8 +96,10 @@ function AnimatedRoutes() {
         <Route
           path="/admin/candidates"
           element={
-            <ProtectedRoute>
-              <PageWrapper><AdminCandidates /></PageWrapper>
+            <ProtectedRoute adminOnly={true}>
+              <PageWrapper>
+                <AdminCandidates />
+              </PageWrapper>
             </ProtectedRoute>
           }
         />
@@ -86,8 +107,10 @@ function AnimatedRoutes() {
         <Route
           path="/admin/positions"
           element={
-            <ProtectedRoute>
-              <PageWrapper><AdminPositions /></PageWrapper>
+            <ProtectedRoute adminOnly={true}>
+              <PageWrapper>
+                <AdminPositions />
+              </PageWrapper>
             </ProtectedRoute>
           }
         />
@@ -95,13 +118,13 @@ function AnimatedRoutes() {
         <Route
           path="/admin/votes"
           element={
-            <ProtectedRoute>
-              <PageWrapper><AdminVotes /></PageWrapper>
+            <ProtectedRoute adminOnly={true}>
+              <PageWrapper>
+                <AdminVotes />
+              </PageWrapper>
             </ProtectedRoute>
           }
-          />
-
-
+        />
       </Routes>
     </AnimatePresence>
   );
